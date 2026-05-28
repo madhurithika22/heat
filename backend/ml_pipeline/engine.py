@@ -44,6 +44,7 @@ class IntelligentDocumentProcessor:
           },
           "pouring_details": {
             "excess_metal_ingot_kg": "Extract excess metal ingot as a number (e.g., 240.0)",
+            "tapping_temperature": "Extract the Tapping Temperature of the ladle, e.g., '1640°C'",
             "pouring_temperatures": ["Array of pouring temperatures, e.g., '1534°C'"],
             "ladle_temperature": "Extract ladle temperature, e.g., '786°C'"
           },
@@ -60,6 +61,7 @@ class IntelligentDocumentProcessor:
               "tapping_sequence": "Tapping sequence number",
               "pouring_sequence": "Pouring sequence number",
               "pouring_time_sec": "Pouring time in seconds",
+              "pouring_temperature": "Extract row pouring temperature if any (e.g., '1534°C')",
               "metal_weight_before_kg": "Weight before pouring",
               "metal_weight_after_kg": "Weight after pouring",
               "kno_weight": "Kno weight",

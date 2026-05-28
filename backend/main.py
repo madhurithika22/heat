@@ -1,11 +1,22 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from core.config import settings
+from database.connection import db_client
 from api.v1 import documents
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Connect to MongoDB at startup
+    db_client.connect()
+    yield
+    # Disconnect from MongoDB at shutdown
+    db_client.disconnect()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    lifespan=lifespan
 )
 
 # Allow React frontend to communicate with this API

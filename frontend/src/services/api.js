@@ -16,5 +16,17 @@ export const documentApi = {
     checkStatus: async (taskId) => {
         const response = await axios.get(`${API_BASE_URL}/documents/status/${taskId}`);
         return response.data;
+    },
+
+    getAllDocuments: async () => {
+        const response = await axios.get(`${API_BASE_URL}/documents`);
+        return response.data;
+    },
+
+    exportDocuments: async () => {
+        const response = await axios.get(`${API_BASE_URL}/documents/export`, {
+            responseType: 'blob'
+        });
+        return response.data;
     }
 };
