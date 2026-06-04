@@ -80,8 +80,10 @@ class IntelligentDocumentProcessor:
         """
 
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={self.api_key}"
+            # 1. FIX: Upgrade to the currently supported active model (gemini-2.5-flash)
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.api_key}"
             headers = {'Content-Type': 'application/json'}
+            
             payload = {
                 "contents": [{
                     "parts": [
@@ -95,8 +97,9 @@ class IntelligentDocumentProcessor:
                     ]
                 }],
                 "generationConfig": {
+                    # 2. REST API requires camelCase for v1beta JSON schema
                     "responseMimeType": "application/json",
-                    "temperature": 0.1 # Low temperature for highly factual OCR extraction
+                    "temperature": 0.1
                 }
             }
             
@@ -104,12 +107,22 @@ class IntelligentDocumentProcessor:
             response.raise_for_status()
             
             result = response.json()
-            ai_text_response = result['candidates'][0]['content']['parts'][0]['text']
+            ai_text_response = result['candidates'][0]['content']['parts'][0]['text'].strip()
+            
+            # Text Sanitization: Strip markdown indicators if appended
+            if ai_text_response.startswith("```"):
+                ai_text_response = ai_text_response.lstrip("`").replace("json", "", 1).strip()
+                if ai_text_response.endswith("```"):
+                    ai_text_response = ai_text_response.rstrip("`").strip()
             
             return json.loads(ai_text_response)
             
         except Exception as e:
-            print(f"AI Vision Error: {e}")
+            print("--- CRITICAL API DIAGNOSTIC LOG ---")
+            print(f"Exception Type: {type(e)}")
+            print(f"Error Message: {str(e)}")
             if 'response' in locals():
-                print(f"API Response: {response.text}")
+                print(f"Gemini HTTP Status Code: {response.status_code}")
+                print(f"Gemini Raw Body Response: {response.text}")
+            print("-----------------------------------")
             return {"error": str(e)}

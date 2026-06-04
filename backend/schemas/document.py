@@ -9,5 +9,5 @@ class ExtractedText(BaseModel):
 class StructuredDocument(BaseModel):
     document_info: Dict[str, Any]
     pouring_details: Dict[str, Any]
-    tables: List[Any]
-    raw_notes: List[Dict[str, Any]]
+    table_data: List[Any]
+    raw_notes: Optional[List[Dict[str, Any]]] = None

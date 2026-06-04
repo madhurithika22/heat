@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  UploadCloud, 
-  FileText, 
-  CheckCircle, 
-  AlertCircle, 
-  Calendar, 
-  Flame, 
-  Thermometer, 
-  Scale, 
-  Activity, 
-  ArrowRight, 
-  Clock, 
+import {
+  UploadCloud,
+  FileText,
+  CheckCircle,
+  AlertCircle,
+  Calendar,
+  Flame,
+  Thermometer,
+  Scale,
+  Activity,
+  ArrowRight,
+  Clock,
   Info,
   Layers3,
   Database,
@@ -79,7 +79,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('ingest'); // 'ingest' or 'historical'
-  
+
   // File upload states
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -120,12 +120,12 @@ export default function Dashboard() {
       if (!rawPouring && details.pouring_temperatures && details.pouring_temperatures[idx]) {
         rawPouring = details.pouring_temperatures[idx];
       }
-      
+
       const pouringTemp = parseFloat(rawPouring.replace(/[^0-9.]/g, "")) || (tappingTemp - 20 - idx * 15);
       const pouredWeight = parseFloat(row.actual_liquid_poured_kg) || parseFloat(row.planned_pouring_weight) || 0;
       const plannedWeight = parseFloat(row.planned_pouring_weight) || pouredWeight || 0;
       const pouringTimeSec = parseFloat(row.pouring_time_sec) || 0;
-      
+
       // Ensure weight difference is calculated
       let weightDiff = parseFloat(row.weight_diff);
       if (isNaN(weightDiff)) {
@@ -171,8 +171,8 @@ export default function Dashboard() {
 
     // Compute document KPIs
     const pourTemps = rows.map(r => r.pouringTemp).filter(t => t > 0);
-    const avgPourTemp = pourTemps.length > 0 
-      ? Math.round(pourTemps.reduce((sum, t) => sum + t, 0) / pourTemps.length) 
+    const avgPourTemp = pourTemps.length > 0
+      ? Math.round(pourTemps.reduce((sum, t) => sum + t, 0) / pourTemps.length)
       : 1565;
 
     const tempLosses = rows.map(r => r.tempLoss).filter(t => t >= 0);
@@ -202,12 +202,12 @@ export default function Dashboard() {
       const data = await documentApi.getAllDocuments();
       if (data && data.length > 0) {
         const heatMap = {};
-        
+
         data.forEach((doc) => {
           const docInfo = doc.extracted_data?.document_info || {};
           const details = doc.extracted_data?.pouring_details || {};
           const table = doc.extracted_data?.table_data || [];
-          
+
           const heatNo = docInfo.heat_no || "N/A";
           if (heatNo === "N/A") return;
 
@@ -375,7 +375,8 @@ export default function Dashboard() {
     formData.append('file', file);
 
     try {
-      const response = await fetch('http://localhost:8000/api/v1/documents/process', {
+      // Change from 'http://localhost:8000/...' to:
+      const response = await fetch('http://127.0.0.1:8000/api/v1/documents/process', {
         method: 'POST',
         body: formData,
       });
@@ -385,11 +386,11 @@ export default function Dashboard() {
       }
 
       const data = await response.json();
-      
+
       if (data.error) {
         throw new Error(data.error);
       }
-      
+
       setResult(data.data);
     } catch (err) {
       setError(err.message || "Failed to process document.");
@@ -424,7 +425,8 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 sm:p-8 space-y-8 max-w-[1600px] mx-auto z-10 relative">
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .custom-scrollbar::-webkit-scrollbar {
           height: 10px;
         }
@@ -459,7 +461,7 @@ export default function Dashboard() {
             Real-time digital record scanning, secure cloud data storage, and process quality analytics.
           </p>
         </div>
-        
+
         {/* Connection status indicator */}
         <div className="flex items-center gap-2.5 px-4 py-2 bg-slate-900/60 border border-slate-800/80 rounded-xl shadow-inner">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse" />
@@ -472,24 +474,22 @@ export default function Dashboard() {
 
       {/* Sleek Tab Switcher Capsules */}
       <div className="flex bg-slate-950/60 p-1.5 border border-slate-855 rounded-2xl w-full sm:w-[480px] shadow-lg shadow-slate-950/40">
-        <button 
+        <button
           onClick={() => setActiveTab('ingest')}
-          className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all duration-300 ${
-            activeTab === 'ingest' 
-              ? 'bg-gradient-to-r from-cyan-500 to-indigo-500 text-slate-950 shadow-md font-extrabold font-sans' 
-              : 'text-slate-450 hover:text-slate-200'
-          }`}
+          className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all duration-300 ${activeTab === 'ingest'
+            ? 'bg-gradient-to-r from-cyan-500 to-indigo-500 text-slate-950 shadow-md font-extrabold font-sans'
+            : 'text-slate-450 hover:text-slate-200'
+            }`}
         >
           <Layers3 size={15} />
           <span>Ladle Ingestion</span>
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('historical')}
-          className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all duration-300 ${
-            activeTab === 'historical' 
-              ? 'bg-gradient-to-r from-cyan-500 to-indigo-500 text-slate-950 shadow-md font-extrabold font-sans' 
-              : 'text-slate-455 hover:text-slate-200'
-          }`}
+          className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all duration-300 ${activeTab === 'historical'
+            ? 'bg-gradient-to-r from-cyan-500 to-indigo-500 text-slate-950 shadow-md font-extrabold font-sans'
+            : 'text-slate-455 hover:text-slate-200'
+            }`}
         >
           <History size={15} />
           <span>Historical Analytics</span>
@@ -500,7 +500,7 @@ export default function Dashboard() {
       {activeTab === 'ingest' && (
         <div className="space-y-8 animate-fade-in">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
+
             {/* Upload Panel */}
             <div className="lg:col-span-2 bg-slate-900/60 backdrop-blur-md p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col justify-between">
               <div>
@@ -513,18 +513,17 @@ export default function Dashboard() {
                 </p>
 
                 {/* Drag & Drop Zone */}
-                <div 
+                <div
                   onDragEnter={handleDrag}
                   onDragOver={handleDrag}
                   onDragLeave={handleDrag}
                   onDrop={handleDrop}
-                  className={`relative border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center transition-all duration-300 ${
-                    dragActive ? 'border-cyan-400 bg-cyan-950/20 scale-[0.99]' : 'border-slate-800 bg-slate-950/40 hover:border-slate-700 hover:bg-slate-900/20'
-                  }`}
+                  className={`relative border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center transition-all duration-300 ${dragActive ? 'border-cyan-400 bg-cyan-950/20 scale-[0.99]' : 'border-slate-800 bg-slate-950/40 hover:border-slate-700 hover:bg-slate-900/20'
+                    }`}
                 >
-                  <input 
+                  <input
                     id="file-upload"
-                    type="file" 
+                    type="file"
                     onChange={handleFileChange}
                     accept=".pdf,.jpg,.jpeg,.png"
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -549,14 +548,13 @@ export default function Dashboard() {
               </div>
 
               <div className="mt-6 flex items-center justify-end">
-                <button 
+                <button
                   onClick={handleUpload}
                   disabled={loading || !file}
-                  className={`w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shadow-lg ${
-                    loading || !file 
-                      ? 'bg-slate-850 text-slate-650 cursor-not-allowed border border-slate-855' 
-                      : 'bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-950 hover:scale-[1.02] shadow-cyan-500/10'
-                  }`}
+                  className={`w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shadow-lg ${loading || !file
+                    ? 'bg-slate-850 text-slate-650 cursor-not-allowed border border-slate-855'
+                    : 'bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-950 hover:scale-[1.02] shadow-cyan-500/10'
+                    }`}
                 >
                   {loading ? (
                     <>
@@ -584,7 +582,7 @@ export default function Dashboard() {
                   <Activity className="text-indigo-400" size={22} />
                   <h2 className="text-lg font-bold text-slate-100">Telemetry Stream</h2>
                 </div>
-                
+
                 {loading ? (
                   <div className="py-10 flex flex-col items-center justify-center text-center space-y-4">
                     <div className="relative w-16 h-16">
@@ -658,10 +656,10 @@ export default function Dashboard() {
           {/* Current Ingested Analytics Block */}
           {result && (
             <div className="space-y-8 animate-fade-in">
-              
+
               {/* Premium Metadata Cards Layer */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
-                
+
                 {/* Document Info Card */}
                 <div className="bg-gradient-to-br from-slate-900/90 to-slate-950/70 p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden group">
                   <div className="absolute top-0 right-0 p-6 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity pointer-events-none">
@@ -694,7 +692,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Pouring Details Card */}
                 <div className="bg-gradient-to-br from-slate-900/90 to-slate-950/70 p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden group">
                   <div className="absolute top-0 right-0 p-6 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity pointer-events-none">
@@ -742,7 +740,7 @@ export default function Dashboard() {
 
               {/* Grid Log (Table FIRST) */}
               <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800 shadow-xl overflow-hidden mt-8 animate-fade-in">
-                
+
                 <div className="p-6 border-b border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
                     <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
@@ -792,7 +790,7 @@ export default function Dashboard() {
                       {result.table_data && result.table_data.length > 0 ? (
                         result.table_data.map((row, index) => {
                           const isNegativeDiff = row.weight_diff && row.weight_diff.toString().includes('-');
-                          
+
                           return (
                             <tr key={index} className="hover:bg-slate-900/40 transition-colors">
                               <td className="px-4 py-3.5 text-slate-655 text-center font-bold border-r border-slate-900/40">
@@ -861,11 +859,10 @@ export default function Dashboard() {
                               </td>
                               <td className="px-4 py-3.5 text-right border-r border-slate-900/40 font-mono">
                                 {row.weight_diff ? (
-                                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                    isNegativeDiff 
-                                      ? 'bg-rose-500/10 border border-rose-500/20 text-rose-400' 
-                                      : 'bg-emerald-500/10 border border-emerald-555/20 text-emerald-400'
-                                  }`}>
+                                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${isNegativeDiff
+                                    ? 'bg-rose-500/10 border border-rose-500/20 text-rose-400'
+                                    : 'bg-emerald-500/10 border border-emerald-555/20 text-emerald-400'
+                                    }`}>
                                     {row.weight_diff}
                                   </span>
                                 ) : (
@@ -901,7 +898,7 @@ export default function Dashboard() {
 
               {/* Visual Analytics Dashboard Section (Renders SECOND below the table) */}
               <div className="space-y-8 pt-4">
-                
+
                 <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                   <div className="flex items-center gap-2.5">
                     <BarChart3 className="text-cyan-400" size={22} />
@@ -911,7 +908,7 @@ export default function Dashboard() {
 
                 {/* Charts Layout Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  
+
                   {/* Plot 1: Pouring Time vs Weight */}
                   <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col justify-between">
                     <div>
@@ -920,26 +917,26 @@ export default function Dashboard() {
                         <span className="ml-auto text-slate-500 text-xs font-bold uppercase tracking-wider">Process Optimization</span>
                       </div>
 
-                      <div className="h-[280px] w-full mt-3">
-                        <ResponsiveContainer width="100%" height="100%">
+                      <div className="h-[280px] w-full mt-3 relative">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                           <ScatterChart margin={{ top: 10, right: 10, bottom: 20, left: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                            <XAxis 
-                              type="number" 
-                              dataKey="pouredWeight" 
-                              name="Poured Weight" 
-                              unit=" kg" 
-                              stroke="#475569" 
+                            <XAxis
+                              type="number"
+                              dataKey="pouredWeight"
+                              name="Poured Weight"
+                              unit=" kg"
+                              stroke="#475569"
                               tick={{ fontSize: 10, fill: '#64748b' }}
                               domain={[0, 'auto']}
                               ticks={getTab1XTicks()}
                             />
-                            <YAxis 
-                              type="number" 
-                              dataKey="pouringTimeSec" 
-                              name="Pouring Time" 
-                              unit=" sec" 
-                              stroke="#475569" 
+                            <YAxis
+                              type="number"
+                              dataKey="pouringTimeSec"
+                              name="Pouring Time"
+                              unit=" sec"
+                              stroke="#475569"
                               tick={{ fontSize: 10, fill: '#64748b' }}
                               domain={[0, 'auto']}
                               ticks={getTab1YTicks()}
@@ -969,18 +966,18 @@ export default function Dashboard() {
                         <span className="ml-auto text-slate-500 text-xs font-bold uppercase tracking-wider">Heat Loss Analysis</span>
                       </div>
 
-                      <div className="h-[280px] w-full mt-3">
-                        <ResponsiveContainer width="100%" height="100%">
+                      <div className="h-[280px] w-full mt-3 relative">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                           <LineChart data={processedRows} margin={{ top: 10, right: 10, bottom: 5, left: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                            <XAxis 
-                              dataKey="id" 
-                              stroke="#475569" 
+                            <XAxis
+                              dataKey="id"
+                              stroke="#475569"
                               tickFormatter={(v, i) => `Pour ${i + 1}`}
                               tick={{ fontSize: 10, fill: '#64748b' }}
                             />
-                            <YAxis 
-                              stroke="#475569" 
+                            <YAxis
+                              stroke="#475569"
                               tick={{ fontSize: 10, fill: '#64748b' }}
                               domain={[1500, 1660]}
                             />
@@ -1009,17 +1006,17 @@ export default function Dashboard() {
                         <span className="ml-auto text-slate-500 text-xs font-bold uppercase tracking-wider">Yield Improvement</span>
                       </div>
 
-                      <div className="h-[280px] w-full mt-3">
-                        <ResponsiveContainer width="100%" height="100%">
+                      <div className="h-[280px] w-full mt-3 relative">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                           <BarChart data={getYieldChartData()} margin={{ top: 10, right: 10, bottom: 5, left: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                            <XAxis 
-                              dataKey="heatNo" 
-                              stroke="#475569" 
+                            <XAxis
+                              dataKey="heatNo"
+                              stroke="#475569"
                               tick={{ fontSize: 10, fill: '#64748b' }}
                             />
-                            <YAxis 
-                              stroke="#475569" 
+                            <YAxis
+                              stroke="#475569"
                               tick={{ fontSize: 10, fill: '#64748b' }}
                             />
                             <Tooltip content={<CustomTooltip />} />
@@ -1047,24 +1044,24 @@ export default function Dashboard() {
                         <span className="ml-auto text-slate-500 text-xs font-bold uppercase tracking-wider">Energy Efficiency</span>
                       </div>
 
-                      <div className="h-[280px] w-full mt-3">
-                        <ResponsiveContainer width="100%" height="100%">
+                      <div className="h-[280px] w-full mt-3 relative">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                           <AreaChart data={processedRows} margin={{ top: 10, right: 10, bottom: 5, left: 0 }}>
                             <defs>
                               <linearGradient id="colorTempLoss" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4}/>
-                                <stop offset="95%" stopColor="#6366f1" stopOpacity={0.0}/>
+                                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
+                                <stop offset="95%" stopColor="#6366f1" stopOpacity={0.0} />
                               </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                            <XAxis 
-                              dataKey="id" 
-                              stroke="#475569" 
+                            <XAxis
+                              dataKey="id"
+                              stroke="#475569"
                               tickFormatter={(v, i) => `Pour ${i + 1}`}
                               tick={{ fontSize: 10, fill: '#64748b' }}
                             />
-                            <YAxis 
-                              stroke="#475569" 
+                            <YAxis
+                              stroke="#475569"
                               tick={{ fontSize: 10, fill: '#64748b' }}
                             />
                             <Tooltip content={<CustomTooltip />} />
@@ -1093,17 +1090,17 @@ export default function Dashboard() {
                       <span className="ml-auto text-slate-500 text-xs font-bold uppercase tracking-wider">Process Stability</span>
                     </div>
 
-                    <div className="h-[300px] w-full mt-4">
-                      <ResponsiveContainer width="100%" height="100%">
+                    <div className="h-[300px] w-full mt-4 relative">
+                      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                         <LineChart data={getSpcChartData()} margin={{ top: 15, right: 20, bottom: 5, left: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                          <XAxis 
-                            dataKey="index" 
-                            stroke="#475569" 
+                          <XAxis
+                            dataKey="index"
+                            stroke="#475569"
                             tick={{ fontSize: 10, fill: '#64748b' }}
                           />
-                          <YAxis 
-                            stroke="#475569" 
+                          <YAxis
+                            stroke="#475569"
                             tick={{ fontSize: 10, fill: '#64748b' }}
                             domain={[
                               dataMin => Math.min(dataMin - 2, spcLimits.lcl - 2),
@@ -1112,20 +1109,20 @@ export default function Dashboard() {
                           />
                           <Tooltip content={<CustomTooltip />} />
                           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
-                          
+
                           {/* Control Limits lines */}
                           <ReferenceLine y={spcLimits.ucl} label={{ value: `UCL (+3σ): ${spcLimits.ucl} kg`, fill: '#ef4444', position: 'top', fontSize: 10, fontWeight: 'bold' }} stroke="#ef4444" strokeDasharray="4 4" strokeWidth={1.5} />
                           <ReferenceLine y={spcLimits.mean} label={{ value: `Mean (CL): ${spcLimits.mean} kg`, fill: '#818cf8', position: 'right', fontSize: 10, fontWeight: 'bold' }} stroke="#818cf8" strokeWidth={1.5} />
                           <ReferenceLine y={spcLimits.lcl} label={{ value: `LCL (-3σ): ${spcLimits.lcl} kg`, fill: '#ef4444', position: 'bottom', fontSize: 10, fontWeight: 'bold' }} stroke="#ef4444" strokeDasharray="4 4" strokeWidth={1.5} />
-                          
-                        <Line 
-                            type="monotone" 
-                            dataKey="weightDiff" 
-                            name="Weight Error (Actual - Planned, kg)" 
-                            stroke="#a78bfa" 
-                            strokeWidth={3} 
+
+                          <Line
+                            type="monotone"
+                            dataKey="weightDiff"
+                            name="Weight Error (Actual - Planned, kg)"
+                            stroke="#a78bfa"
+                            strokeWidth={3}
                             dot={{ r: 4, fill: '#8b5cf6', stroke: '#a78bfa', strokeWidth: 1.5 }}
-                            activeDot={{ r: 7 }} 
+                            activeDot={{ r: 7 }}
                           />
                         </LineChart>
                       </ResponsiveContainer>
@@ -1151,7 +1148,7 @@ export default function Dashboard() {
       {/* TAB 2: Historical Multi-Heat Multi-Series Analytics */}
       {activeTab === 'historical' && (
         <div className="space-y-8 animate-fade-in">
-          
+
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-3">
             <div className="flex items-center gap-2.5">
               <History className="text-cyan-400" size={22} />
@@ -1161,11 +1158,10 @@ export default function Dashboard() {
               <button
                 onClick={handleExport}
                 disabled={exporting}
-                className={`px-4 py-2 rounded-xl text-[11px] font-extrabold uppercase tracking-wider transition-all duration-300 flex items-center gap-2 shadow-lg ${
-                  exporting
-                    ? 'bg-slate-850 text-slate-600 cursor-not-allowed border border-slate-800'
-                    : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-450 hover:to-teal-450 text-slate-950 hover:scale-[1.03] shadow-emerald-500/10'
-                }`}
+                className={`px-4 py-2 rounded-xl text-[11px] font-extrabold uppercase tracking-wider transition-all duration-300 flex items-center gap-2 shadow-lg ${exporting
+                  ? 'bg-slate-850 text-slate-600 cursor-not-allowed border border-slate-800'
+                  : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-450 hover:to-teal-450 text-slate-950 hover:scale-[1.03] shadow-emerald-500/10'
+                  }`}
               >
                 {exporting ? (
                   <>
@@ -1196,7 +1192,7 @@ export default function Dashboard() {
               <div>
                 <strong className="font-bold uppercase tracking-wider block mb-1">Failed to Load Records</strong>
                 <p className="font-semibold text-xs leading-relaxed">{historyError}</p>
-                <button 
+                <button
                   onClick={fetchHistoricalData}
                   className="mt-3 px-4 py-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-bold uppercase tracking-wider text-[10px] rounded-lg border border-rose-500/30"
                 >
@@ -1214,7 +1210,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="space-y-8 animate-fade-in">
-              
+
               {/* Multi-Series Scatter Plot: Pouring Time vs Weight for 10 Heats */}
               <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col justify-between">
                 <div>
@@ -1235,13 +1231,13 @@ export default function Dashboard() {
                     {historicalHeats.map((heat, idx) => {
                       const color = HEAT_COLORS[idx % HEAT_COLORS.length];
                       return (
-                        <span 
-                          key={heat.heatNo} 
+                        <span
+                          key={heat.heatNo}
                           className="px-2.5 py-1 rounded-full text-xs font-bold font-mono border flex items-center gap-1.5 transition-all duration-300 hover:scale-[1.03]"
-                          style={{ 
-                            backgroundColor: `${color}15`, 
-                            borderColor: `${color}35`, 
-                            color: color 
+                          style={{
+                            backgroundColor: `${color}15`,
+                            borderColor: `${color}35`,
+                            color: color
                           }}
                         >
                           <span className="w-1.5 h-1.5 rounded-full shrink-0 animate-pulse" style={{ backgroundColor: color }} />
@@ -1251,26 +1247,26 @@ export default function Dashboard() {
                     })}
                   </div>
 
-                  <div className="h-[400px] w-full mt-4">
-                    <ResponsiveContainer width="100%" height="100%">
+                  <div className="h-[400px] w-full mt-4 relative">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                       <ScatterChart margin={{ top: 20, right: 30, bottom: 20, left: 10 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                        <XAxis 
-                          type="number" 
-                          dataKey="pouredWeight" 
-                          name="Poured Weight" 
-                          unit=" kg" 
-                          stroke="#475569" 
+                        <XAxis
+                          type="number"
+                          dataKey="pouredWeight"
+                          name="Poured Weight"
+                          unit=" kg"
+                          stroke="#475569"
                           tick={{ fontSize: 10, fill: '#64748b' }}
                           domain={[0, 'auto']}
                           ticks={getHistoricalXTicks()}
                         />
-                        <YAxis 
-                          type="number" 
-                          dataKey="pouringTimeSec" 
-                          name="Pouring Time" 
-                          unit=" sec" 
-                          stroke="#475569" 
+                        <YAxis
+                          type="number"
+                          dataKey="pouringTimeSec"
+                          name="Pouring Time"
+                          unit=" sec"
+                          stroke="#475569"
                           tick={{ fontSize: 10, fill: '#64748b' }}
                           domain={[0, 'auto']}
                           ticks={getHistoricalYTicks()}
@@ -1278,14 +1274,14 @@ export default function Dashboard() {
                         <ZAxis type="number" range={[65, 65]} />
                         <Tooltip content={<CustomTooltip />} cursor={{ strokeDasharray: '3 3', stroke: '#334155' }} />
                         <Legend wrapperStyle={{ fontSize: 11, paddingTop: 15 }} />
-                        
+
                         {historicalHeats.map((heat, idx) => (
-                          <Scatter 
-                            key={heat.heatNo} 
-                            name={`Heat ${heat.heatNo}`} 
-                            data={heat.data} 
-                            fill={HEAT_COLORS[idx % HEAT_COLORS.length]} 
-                            shape="circle" 
+                          <Scatter
+                            key={heat.heatNo}
+                            name={`Heat ${heat.heatNo}`}
+                            data={heat.data}
+                            fill={HEAT_COLORS[idx % HEAT_COLORS.length]}
+                            shape="circle"
                           />
                         ))}
                       </ScatterChart>
@@ -1338,7 +1334,7 @@ export default function Dashboard() {
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center gap-2">
                                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: HEAT_COLORS[idx % HEAT_COLORS.length] }} />
-                                <span 
+                                <span
                                   className="text-[10px] font-extrabold uppercase tracking-wider"
                                   style={{ color: HEAT_COLORS[idx % HEAT_COLORS.length] }}
                                 >
@@ -1347,12 +1343,12 @@ export default function Dashboard() {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span 
+                              <span
                                 className="px-2.5 py-1 rounded-full text-[11px] font-bold font-mono border"
-                                style={{ 
-                                  backgroundColor: `${HEAT_COLORS[idx % HEAT_COLORS.length]}15`, 
-                                  borderColor: `${HEAT_COLORS[idx % HEAT_COLORS.length]}30`, 
-                                  color: HEAT_COLORS[idx % HEAT_COLORS.length] 
+                                style={{
+                                  backgroundColor: `${HEAT_COLORS[idx % HEAT_COLORS.length]}15`,
+                                  borderColor: `${HEAT_COLORS[idx % HEAT_COLORS.length]}30`,
+                                  color: HEAT_COLORS[idx % HEAT_COLORS.length]
                                 }}
                               >
                                 Heat {heat.heatNo}
