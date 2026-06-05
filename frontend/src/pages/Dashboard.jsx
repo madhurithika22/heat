@@ -376,7 +376,7 @@ export default function Dashboard() {
 
     try {
       // Change from 'http://localhost:8000/...' to:
-      const response = await fetch('http://127.0.0.1:8000/api/v1/documents/process', {
+      const response = await fetch('https://madhurithika22-pouring.hf.space/api/v1/documents/process', {
         method: 'POST',
         body: formData,
       });
