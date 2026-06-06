@@ -34,10 +34,10 @@ class FieldMapper:
         
         prompt = f"""
         You are an elite Industrial Data Extraction AI. 
-        I am providing you with the raw, imperfect OCR text from a Ladle Pouring Record.
+        I am providing you with the raw, imperfect OCR text from a Heat Treatment Log Sheet.
         
-        Your task is to semantically analyze the text, correct any obvious OCR typos (e.g., 'Laddie' -> 'Ladle', 'Tem Pexqture' -> 'Temperature'), and map the values to the exact JSON schema provided. 
-        Use your intelligence to align the columns properly. For example, if you see 'WCB', that is the Grade. If you see 'Geco Special Machiners', that is the Customer.
+        Your task is to semantically analyze the text, correct any obvious OCR typos, and map the values to the exact JSON schema provided. 
+        Use your intelligence to align the columns properly based on the context of the flattened text.
         
         RAW OCR TEXT:
         {combined_ocr_text}
@@ -46,49 +46,63 @@ class FieldMapper:
         You MUST return ONLY a valid JSON object matching this exact structure. Do not invent data. If a field is missing, use an empty string "".
         
         {{
-          "document_info": {{
-            "date": "Extract the document date",
-            "heat_no": "Extract the Heat Number (e.g., A09600)",
-            "ladle_capacity": "Extract ladle capacity (e.g., '3 Ton')"
+          "document_metadata": {{
+            "document_title": "Extract the main title of the document",
+            "cycle_no": "Extract Cycle No",
+            "cycle_date": "Extract Cycle Date",
+            "cycle_details": "Extract the text under Cycle Details",
+            "furnace": "Extract Furnace type",
+            "max_thick_loaded": "Extract Maximum Thick Loaded"
           }},
-          "pouring_details": {{
-            "excess_metal_ingot_kg": "Extract excess metal ingot as a number (e.g., 240.0)",
-            "pouring_temperatures": ["Array of pouring temperatures, e.g., '1534°C'"],
-            "ladle_temperature": "Extract ladle temperature, e.g., '786°C'"
+          "process_details": {{
+            "fc_on_time": "Extract F/C On Time",
+            "temp_reach_at": "Extract Temp Reach at",
+            "fc_off_time": "Extract F/C OFF Time",
+            "water_temp_before": "Extract Water Temp Before",
+            "water_temp_after": "Extract Water Temp After",
+            "quenching_sec": "Extract Quenching Sec"
           }},
-          "table_data": [
+          "pattern_data": [
             {{
-              "date": "Row Date (if any)",
-              "heat_no": "Row Heat No (e.g., A09600-01)",
-              "item": "Item description (e.g., BEARING HOUSING, TC-3000)",
-              "grade": "Material grade (e.g., WCB)",
-              "customer": "Customer Name",
-              "planned_pouring_weight": "Planned weight",
-              "pouring_time_planned": "Planned time",
-              "ladle_number": "Ladle No",
-              "tapping_sequence": "Tapping sequence number",
-              "pouring_sequence": "Pouring sequence number",
-              "pouring_time_sec": "Pouring time in seconds",
-              "metal_weight_before_kg": "Weight before pouring",
-              "metal_weight_after_kg": "Weight after pouring",
-              "kno_weight": "Kno weight",
-              "actual_liquid_poured_kg": "Actual liquid poured",
-              "weight_diff": "Difference in weight",
-              "pouring_observation": "Remarks or observations",
-              "weight_before_cutting": "Weight before cutting"
+              "pattern_code": "Extract Pattern Code",
+              "item_name": "Extract Item Name",
+              "remarks": "Extract Remarks"
             }}
-          ]
+          ],
+          "main_table_data": [
+            {{
+              "pour_date": "Extract Pour Date",
+              "heat_no": "Extract Heat number",
+              "grade": "Extract Grade",
+              "sale_order": "Extract Sale order / Item",
+              "drawing_no": "Extract Drawing No",
+              "part_no": "Extract Part No",
+              "description": "Extract Description",
+              "qty": "Extract Qty as a number",
+              "weight": "Extract Weight as a number"
+            }}
+          ],
+          "signatures": {{
+            "lab_in_charge": "Extract true/false if signed",
+            "qa_in_charge": "Extract true/false if signed",
+            "verified_sign": "Extract name of verified sign if present"
+          }}
         }}
         
         RULES:
-        1. Ignore table headers (e.g., do not make a row where customer="Customer" or item="Item").
-        2. Ensure data aligns correctly. Do not put numbers in the Customer field unless it is an actual numbered customer code.
+        1. Ignore table headers.
+        2. Ensure data aligns correctly into the respective arrays.
         """
 
-        # Fallback dictionary if API fails
+        # Fallback dictionary if API fails (Updated to new schema)
         fallback_data = {
-            "document_info": {}, "pouring_details": {}, "table_data": [], 
-            "error": "AI Inference failed.", "raw_text_dump": combined_ocr_text
+            "document_metadata": {}, 
+            "process_details": {}, 
+            "pattern_data": [], 
+            "main_table_data": [], 
+            "signatures": {},
+            "error": "AI Inference failed.", 
+            "raw_text_dump": combined_ocr_text
         }
 
         if not self.api_key:
@@ -96,8 +110,8 @@ class FieldMapper:
             return fallback_data
 
         try:
-            # DIRECT REST API CALL (Bypasses Google SDK & Protobuf conflicts completely)
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.api_key}"
+            # DIRECT REST API CALL
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.api_key}"
             headers = {'Content-Type': 'application/json'}
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}],

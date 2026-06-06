@@ -82,6 +82,7 @@ async def export_all_data_to_excel(db = Depends(get_db)):
     """
     Aggregates all processed document records, converts to an Excel sheet,
     and returns it as a downloadable attachment with structural verification safety.
+    Updated for Heat Treatment Log Sheets.
     """
     if db is None:
         raise HTTPException(status_code=500, detail="Database connection is not initialized.")
@@ -91,34 +92,27 @@ async def export_all_data_to_excel(db = Depends(get_db)):
         pipeline = [
             {
                 '$match': {
-                    'extracted_data.table_data': {'$exists': True, '$type': 'array'}
+                    'extracted_data.main_table_data': {'$exists': True, '$type': 'array'}
                 }
             },
             {
-                '$unwind': '$extracted_data.table_data'
+                '$unwind': '$extracted_data.main_table_data'
             }, 
             {
                 '$project': {
                     '_id': 0, 
-                    'date': {'$ifNull': ['$extracted_data.table_data.date', 'N/A']}, 
-                    'heat_no': {'$ifNull': ['$extracted_data.table_data.heat_no', 'N/A']}, 
-                    'item': {'$ifNull': ['$extracted_data.table_data.item', 'N/A']}, 
-                    'grade': {'$ifNull': ['$extracted_data.table_data.grade', 'N/A']}, 
-                    'customer': {'$ifNull': ['$extracted_data.table_data.customer', 'N/A']}, 
-                    'planned_pouring_weight': {'$ifNull': ['$extracted_data.table_data.planned_pouring_weight', '']}, 
-                    'pouring_time_planned': {'$ifNull': ['$extracted_data.table_data.pouring_time_planned', '']}, 
-                    'ladle_number': {'$ifNull': ['$extracted_data.table_data.ladle_number', '']}, 
-                    'tapping_sequence': {'$ifNull': ['$extracted_data.table_data.tapping_sequence', '']}, 
-                    'pouring_sequence': {'$ifNull': ['$extracted_data.table_data.pouring_sequence', '']}, 
-                    'pouring_time_sec': {'$ifNull': ['$extracted_data.table_data.pouring_time_sec', '']}, 
-                    'pouring_temperature': {'$ifNull': ['$extracted_data.table_data.pouring_temperature', '']}, 
-                    'metal_weight_before_kg': {'$ifNull': ['$extracted_data.table_data.metal_weight_before_kg', '']}, 
-                    'metal_weight_after_kg': {'$ifNull': ['$extracted_data.table_data.metal_weight_after_kg', '']}, 
-                    'kno_weight': {'$ifNull': ['$extracted_data.table_data.kno_weight', '']}, 
-                    'actual_liquid_poured_kg': {'$ifNull': ['$extracted_data.table_data.actual_liquid_poured_kg', '']}, 
-                    'weight_diff': {'$ifNull': ['$extracted_data.table_data.weight_diff', '']}, 
-                    'pouring_observation': {'$ifNull': ['$extracted_data.table_data.pouring_observation', '']}, 
-                    'weight_before_cutting': {'$ifNull': ['$extracted_data.table_data.weight_before_cutting', '']}
+                    'pour_date': {'$ifNull': ['$extracted_data.main_table_data.pour_date', 'N/A']}, 
+                    'heat_no': {'$ifNull': ['$extracted_data.main_table_data.heat_no', 'N/A']}, 
+                    'grade': {'$ifNull': ['$extracted_data.main_table_data.grade', 'N/A']}, 
+                    'sale_order': {'$ifNull': ['$extracted_data.main_table_data.sale_order', 'N/A']}, 
+                    'drawing_no': {'$ifNull': ['$extracted_data.main_table_data.drawing_no', '']}, 
+                    'part_no': {'$ifNull': ['$extracted_data.main_table_data.part_no', '']}, 
+                    'description': {'$ifNull': ['$extracted_data.main_table_data.description', '']}, 
+                    'qty': {'$ifNull': ['$extracted_data.main_table_data.qty', '']}, 
+                    'weight': {'$ifNull': ['$extracted_data.main_table_data.weight', '']},
+                    'cycle_no': {'$ifNull': ['$extracted_data.document_metadata.cycle_no', 'N/A']},
+                    'cycle_date': {'$ifNull': ['$extracted_data.document_metadata.cycle_date', 'N/A']},
+                    'furnace': {'$ifNull': ['$extracted_data.document_metadata.furnace', 'N/A']}
                 }
             }
         ]
@@ -128,11 +122,8 @@ async def export_all_data_to_excel(db = Depends(get_db)):
         data = await cursor.to_list(length=10000)
         
         columns = [
-            'date', 'heat_no', 'item', 'grade', 'customer', 'planned_pouring_weight',
-            'pouring_time_planned', 'ladle_number', 'tapping_sequence', 'pouring_sequence',
-            'pouring_time_sec', 'pouring_temperature', 'metal_weight_before_kg',
-            'metal_weight_after_kg', 'kno_weight', 'actual_liquid_poured_kg',
-            'weight_diff', 'pouring_observation', 'weight_before_cutting'
+            'pour_date', 'heat_no', 'grade', 'sale_order', 'drawing_no', 
+            'part_no', 'description', 'qty', 'weight', 'cycle_no', 'cycle_date', 'furnace'
         ]
 
         if not data:
@@ -144,14 +135,14 @@ async def export_all_data_to_excel(db = Depends(get_db)):
             
         buffer = io.BytesIO()
         with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False, sheet_name='Pouring Data')
+            df.to_excel(writer, index=False, sheet_name='Heat Treatment Data')
             
         buffer.seek(0)
         
         return StreamingResponse(
             buffer,
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            headers={"Content-Disposition": "attachment; filename=pouring_data.xlsx"}
+            headers={"Content-Disposition": "attachment; filename=heat_treatment_data.xlsx"}
         )
         
     except Exception as e:

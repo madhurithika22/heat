@@ -27,7 +27,8 @@ export default function App() {
                                     v2.1
                                 </span>
                             </div>
-                            <p className="text-[10px] text-slate-400 font-medium tracking-wide">LADLE POURING & IDP VALIDATION SYSTEMS</p>
+                            {/* UPDATED: Changed from Ladle Pouring to Heat Treatment */}
+                            <p className="text-[10px] text-slate-400 font-medium tracking-wide">HEAT TREATMENT & IDP VALIDATION SYSTEMS</p>
                         </div>
                     </div>
 
@@ -50,7 +51,8 @@ export default function App() {
             {/* Footer */}
             <footer className="z-10 py-6 border-t border-slate-800 bg-slate-950/40 text-center text-xs text-slate-500 font-medium">
                 <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <p>© 2026 Pouring Industry &bull; Advanced Metallurgy Intelligent System</p>
+                    {/* UPDATED: Changed Advanced Metallurgy to Heat Treatment */}
+                    <p>© 2026 Pouring Industry &bull; Advanced Heat Treatment Intelligent System</p>
                     <div className="flex items-center gap-4 text-slate-400">
                         <span>Reliability Score: <strong className="text-cyan-400 font-semibold">99.8%</strong></span>
                         <span className="text-slate-600">|</span>
