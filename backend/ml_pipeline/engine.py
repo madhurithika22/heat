@@ -4,6 +4,7 @@ import json
 import os
 import requests
 from .preprocessing import ImagePreprocessor
+from dotenv import load_dotenv
 from core.config import settings
 
 class IntelligentDocumentProcessor:

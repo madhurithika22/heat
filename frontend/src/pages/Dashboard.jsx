@@ -917,22 +917,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Raw JSON Output Section */}
-              <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 shadow-xl mt-8 animate-fade-in">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-                  <div className="flex items-center gap-2.5">
-                    <FileText className="text-cyan-400" size={22} />
-                    <h3 className="text-base font-bold text-slate-100">Raw Gemini JSON Output</h3>
-                  </div>
-                  <span className="text-slate-500 text-xs font-bold uppercase tracking-wider">REST Response API</span>
-                </div>
-                <div className="relative">
-                  <pre className="bg-slate-950/80 p-4 rounded-xl text-xs font-mono text-cyan-400 border border-slate-800 overflow-auto max-h-[400px] custom-scrollbar leading-relaxed">
-                    {JSON.stringify(result, null, 2)}
-                  </pre>
-                </div>
-              </div>
-
             </div>
           )}
 
