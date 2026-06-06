@@ -509,7 +509,7 @@ export default function Dashboard() {
                   </div>
                   <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider block">Cycle Code / ID</span>
                   <strong className="text-cyan-400 text-2xl font-black block font-mono mt-1">
-                    {kpis.cycle_no}
+                    {kpis.cycleNo}
                   </strong>
                   <span className="text-[10px] text-slate-400 font-semibold block mt-1">
                     Date: {result.document_metadata?.cycle_date || 'N/A'}

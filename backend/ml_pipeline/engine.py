@@ -7,6 +7,9 @@ from .preprocessing import ImagePreprocessor
 from dotenv import load_dotenv
 from core.config import settings
 
+# FIX: Force load the updated environment variables immediately 
+load_dotenv(override=True)
+
 class IntelligentDocumentProcessor:
     def __init__(self):
         self.preprocessor = ImagePreprocessor()
@@ -86,7 +89,7 @@ class IntelligentDocumentProcessor:
         """
 
         try:
-            # FIX: Using gemini-2.5-flash
+            # Clean route using your stable quota channel
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.api_key}"
             headers = {'Content-Type': 'application/json'}
             

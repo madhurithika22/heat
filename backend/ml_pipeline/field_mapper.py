@@ -1,7 +1,11 @@
 import os
 import json
 import requests
+from dotenv import load_dotenv
 from core.config import settings
+
+# Force-load the latest environment variable variables to bypass Windows caching
+load_dotenv(override=True)
 
 class FieldMapper:
     def __init__(self):
@@ -110,7 +114,7 @@ class FieldMapper:
             return fallback_data
 
         try:
-            # DIRECT REST API CALL
+            # FIX: Swapped out gemini-2.0-flash for gemini-2.5-flash
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.api_key}"
             headers = {'Content-Type': 'application/json'}
             payload = {

@@ -3,6 +3,10 @@ from core.config import settings
 from ml_pipeline.engine import IntelligentDocumentProcessor
 import asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
+from dotenv import load_dotenv
+
+# Force load the updated environment variables immediately inside the worker thread context
+load_dotenv(override=True)
 
 # Initialize Celery connected to Redis
 celery_app = Celery(
@@ -34,11 +38,16 @@ def process_document_task(self, file_path: str):
     The background task that runs the OCR pipeline.
     """
     try:
-        # 1. Run the heavy ML Pipeline
+        # 1. Run the heavy ML Pipeline (Now cleanly routing through gemini-2.5-flash)
         extracted_results = ocr_engine.process_document(file_path)
         
         # 2. Save to Database (running async Mongo in a sync Celery thread)
-        loop = asyncio.get_event_loop()
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
         if loop.is_closed():
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
