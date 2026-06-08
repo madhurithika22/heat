@@ -5,7 +5,7 @@ const getApiBaseUrl = () => {
         (window.location.hostname === 'localhost' || 
          window.location.hostname === '127.0.0.1' || 
          window.location.hostname.startsWith('192.168.'))) {
-        return 'http://127.0.0.1:8085/api/v1';
+        return 'http://127.0.0.1:8000/api/v1';
     }
     return 'https://madhurithika22-heat-treatment.hf.space/api/v1';
 };
@@ -13,11 +13,11 @@ const getApiBaseUrl = () => {
 const API_BASE_URL = getApiBaseUrl();
 
 export const documentApi = {
-    uploadDocument: async (file) => {
+    uploadDocument: async (file, mock = false) => {
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await axios.post(`${API_BASE_URL}/documents/process`, formData, {
+        const response = await axios.post(`${API_BASE_URL}/documents/process?mock=${mock}`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
         return response.data;

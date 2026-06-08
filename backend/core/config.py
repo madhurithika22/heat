@@ -5,7 +5,10 @@ class Settings(BaseSettings):
     # API Settings
     PROJECT_NAME: str = "IDP Production Engine"
     API_V1_STR: str = "/api/v1"
-    GEMINI_API_KEY: str = ""
+    
+    # Support multiple keys for fallback
+    GEMINI_API_KEYS: str = os.getenv("GEMINI_API_KEYS", "")
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "") # Keep for backward compatibility
     
     # Storage Settings
     UPLOAD_DIR: str = "uploads"

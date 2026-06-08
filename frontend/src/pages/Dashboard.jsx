@@ -79,6 +79,7 @@ export default function Dashboard() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [dragActive, setDragActive] = useState(false);
+  const [mockMode, setMockMode] = useState(false);
 
   // States for active document analytics
   const [kpis, setKpis] = useState({ totalWeight: 0, totalQty: 0, cycleNo: 'N/A', furnace: 'N/A' });
@@ -253,7 +254,7 @@ export default function Dashboard() {
     setResult(null);
 
     try {
-      const data = await documentApi.uploadDocument(file);
+      const data = await documentApi.uploadDocument(file, mockMode);
       if (data.error) {
         throw new Error(data.error);
       }
@@ -387,6 +388,38 @@ export default function Dashboard() {
                     </div>
                   )}
                 </div>
+
+                {/* Glassmorphic Digitization Mode Selector */}
+                <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-slate-950/40 rounded-xl border border-slate-800/80">
+                  <div>
+                    <h3 className="text-slate-300 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                      <Zap size={13} className={mockMode ? "text-amber-400" : "text-cyan-400"} />
+                      <span>Digitization Mode</span>
+                    </h3>
+                    <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">
+                      Choose to extract using Live Gemini AI or simulated Mock OCR data.
+                    </p>
+                  </div>
+                  <div className="flex bg-slate-900 border border-slate-800 p-1 rounded-lg shadow-inner">
+                    <button
+                      onClick={() => setMockMode(false)}
+                      className={`px-3.5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-300 ${!mockMode 
+                        ? 'bg-gradient-to-r from-cyan-500 to-indigo-500 text-slate-950 shadow' 
+                        : 'text-slate-400 hover:text-slate-200'}`}
+                    >
+                      Live AI
+                    </button>
+                    <button
+                      onClick={() => setMockMode(true)}
+                      className={`px-3.5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-300 ${mockMode 
+                        ? 'bg-gradient-to-r from-cyan-500 to-indigo-500 text-slate-950 shadow' 
+                        : 'text-slate-400 hover:text-slate-200'}`}
+                    >
+                      
+                    </button>
+                  </div>
+                </div>
+
               </div>
 
               <div className="mt-6 flex items-center justify-end">

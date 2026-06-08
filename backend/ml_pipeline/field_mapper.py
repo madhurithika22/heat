@@ -9,9 +9,27 @@ load_dotenv(override=True)
 
 class FieldMapper:
     def __init__(self):
-        self.api_key = settings.GEMINI_API_KEY or os.getenv("GEMINI_API_KEY")
-        if not self.api_key:
-            print("WARNING: GEMINI_API_KEY environment variable is not set!")
+        # Pull multiple keys from environment (comma-separated)
+        raw_keys = os.getenv("GEMINI_API_KEYS") or getattr(settings, "GEMINI_API_KEYS", "")
+        
+        # Fallback to single key if GEMINI_API_KEYS is not set
+        if not raw_keys:
+            raw_keys = os.getenv("GEMINI_API_KEY") or getattr(settings, "GEMINI_API_KEY", "")
+            
+        # Create a list of clean, non-empty keys
+        self.api_keys = [k.strip() for k in raw_keys.split(",") if k.strip()]
+        self.current_key_idx = 0
+        
+        if not self.api_keys:
+            print("WARNING: GEMINI_API_KEYS environment variable is not set!")
+
+    def get_next_key(self):
+        """Round-robin key rotation for fallback mechanism"""
+        if not self.api_keys:
+            return None
+        key = self.api_keys[self.current_key_idx]
+        self.current_key_idx = (self.current_key_idx + 1) % len(self.api_keys)
+        return key
 
     def _flatten_ocr_data(self, raw_data: dict) -> str:
         """Converts the raw OCR bounding box data into a readable text dump."""
@@ -98,7 +116,7 @@ class FieldMapper:
         2. Ensure data aligns correctly into the respective arrays.
         """
 
-        # Fallback dictionary if API fails (Updated to new schema)
+        # Fallback dictionary if API fails
         fallback_data = {
             "document_metadata": {}, 
             "process_details": {}, 
@@ -109,33 +127,67 @@ class FieldMapper:
             "raw_text_dump": combined_ocr_text
         }
 
-        if not self.api_key:
-            fallback_data["error"] = "Missing GEMINI_API_KEY"
+        if not self.api_keys:
+            fallback_data["error"] = "Missing GEMINI_API_KEYS"
             return fallback_data
 
-        try:
-            # FIX: Swapped out gemini-2.0-flash for gemini-2.5-flash
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.api_key}"
-            headers = {'Content-Type': 'application/json'}
-            payload = {
-                "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {"responseMimeType": "application/json"}
-            }
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"responseMimeType": "application/json"}
+        }
+        headers = {'Content-Type': 'application/json'}
+
+        max_retries = len(self.api_keys)
+        last_error = None
+
+        print(f"Executing semantic mapping... (Pool size: {max_retries} keys)")
+
+        for attempt in range(max_retries):
+            current_key = self.get_next_key()
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={current_key}"
             
-            response = requests.post(url, headers=headers, json=payload)
-            response.raise_for_status()
-            
-            # Parse the Gemini JSON response
-            result = response.json()
-            ai_text_response = result['candidates'][0]['content']['parts'][0]['text']
-            
-            structured_data = json.loads(ai_text_response)
-            structured_data["raw_text_dump"] = combined_ocr_text 
-            
-            return structured_data
-            
-        except Exception as e:
-            print(f"AI Mapping Error: {e}")
-            if 'response' in locals():
-                print(f"API Response: {response.text}")
-            return fallback_data
+            try:
+                response = requests.post(url, headers=headers, json=payload)
+                
+                # Check specifically for quota exhaustion
+                if response.status_code == 429:
+                    print(f"⚠️ Mapper Quota exhausted for key ending in ...{current_key[-4:]}. Trying next key...")
+                    last_error = "HTTP 429: Quota Exhausted"
+                    continue
+                    
+                response.raise_for_status()
+                
+                result = response.json()
+                ai_text_response = result['candidates'][0]['content']['parts'][0]['text'].strip()
+                
+                # Clean markdown if present
+                if ai_text_response.startswith("```"):
+                    ai_text_response = ai_text_response.lstrip("`").replace("json", "", 1).strip()
+                    if ai_text_response.endswith("```"):
+                        ai_text_response = ai_text_response.rstrip("`").strip()
+                
+                structured_data = json.loads(ai_text_response)
+                structured_data["raw_text_dump"] = combined_ocr_text 
+                
+                return structured_data
+                
+            except requests.exceptions.HTTPError as he:
+                if response.status_code == 429:
+                    print(f"⚠️ Mapper Quota exhausted (HTTPError) for key ...{current_key[-4:]}. Trying next key...")
+                    last_error = "HTTP 429: Quota Exhausted"
+                    continue
+                else:
+                    print(f"AI Mapping Error (HTTP): {he}")
+                    if 'response' in locals():
+                        print(f"API Response: {response.text}")
+                    last_error = str(he)
+                    break
+            except Exception as e:
+                print(f"AI Mapping Error: {e}")
+                last_error = str(e)
+                break
+
+        # If loop exhausts without returning, attach the last error to the fallback dict
+        print(f"❌ All configured API keys failed for mapping. Last error: {last_error}")
+        fallback_data["error"] = f"All API keys exhausted. Last Error: {last_error}"
+        return fallback_data
