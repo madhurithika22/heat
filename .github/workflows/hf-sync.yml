@@ -1,11 +1,9 @@
 name: Sync Backend to Hugging Face Space
 
-# This triggers the action every time you push to the 'main' branch
 on:
   push:
     branches:
       - main
-    # Optional: Only trigger if files inside the backend folder are changed
     paths:
       - 'backend/**'
 
@@ -13,25 +11,22 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      # Updated to v4 to fix the Node.js warning
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Push to Hugging Face
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          # Go into the backend folder
           cd backend
           
-          # Initialize a fresh git repository just for these files
           git init -b main
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           
-          # Add all backend files and the Dockerfile
           git add .
           git commit -m "Auto-deploy from GitHub"
           
-          # Force push to the Hugging Face Space
-          # Note: If your Space name has an underscore instead of a hyphen, change 'heat-treatment' below to match your exact Space name.
-          git push --force https://madhurithika22:$HF_TOKEN@huggingface.co/spaces/madhurithika22/heat-treatment main
+          # Ensure the space name matches exactly what is in your Hugging Face settings (with the underscore)
+          git push --force https://madhurithika22:$HF_TOKEN@huggingface.co/spaces/madhurithika22/heat_treatment main
