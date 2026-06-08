@@ -11,7 +11,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # Updated to v4 to fix the Node.js warning
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -19,8 +18,15 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
+          # 1. Verify the token exists before trying to push
+          if [ -z "$HF_TOKEN" ]; then
+            echo "ERROR: HF_TOKEN is empty or not set in GitHub Secrets!"
+            exit 1
+          fi
+
           cd backend
           
+          # 2. Initialize and configure Git
           git init -b main
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
@@ -28,5 +34,9 @@ jobs:
           git add .
           git commit -m "Auto-deploy from GitHub"
           
-          # Ensure the space name matches exactly what is in your Hugging Face settings (with the underscore)
-          git push --force https://madhurithika22:$HF_TOKEN@huggingface.co/spaces/madhurithika22/heat_treatment main
+          # 3. Add the remote explicitly to avoid URL parsing errors
+          # Make sure 'heat_treatment' matches your Space name exactly!
+          git remote add hf "https://madhurithika22:$HF_TOKEN@huggingface.co/spaces/madhurithika22/heat_treatment"
+          
+          # 4. Force push
+          git push --force hf main
