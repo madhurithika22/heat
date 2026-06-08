@@ -7,7 +7,7 @@ const getApiBaseUrl = () => {
          window.location.hostname.startsWith('192.168.'))) {
         return 'http://127.0.0.1:8085/api/v1';
     }
-    return 'https://madhurithika22-pouring.hf.space/api/v1';
+    return 'https://madhurithika22-heat-treatment.hf.space/api/v1';
 };
 
 const API_BASE_URL = getApiBaseUrl();
