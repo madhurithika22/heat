@@ -201,6 +201,7 @@ function ForgeDashboard() {
           fileName={fileName}
           apiFinished={apiFinished}
           errorOccurred={apiError}
+          theme={theme}
           onComplete={() => {
             if (apiError) {
               setUploadState("error");
