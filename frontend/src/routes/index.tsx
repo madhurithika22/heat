@@ -164,7 +164,7 @@ function ForgeDashboard() {
       formData.append("file", file);
 
       // Using environment variable to point to FastAPI
-      const apiUrl = import.meta.env.VITE_API_BASE_URL || "https://kripasreeeee/Heat.hf.space/api/v1";
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || "https://kripasreeeee-heat.hf.space/api/v1";
       
       const response = await fetch(`${apiUrl}/documents/process`, {
         method: 'POST',
